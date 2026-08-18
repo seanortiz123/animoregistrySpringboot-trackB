@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: pageHead(${title})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: nav('home')}"></nav>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="eyebrow">DLSU recruitment, one stop</span>
+    <h1>Find the org that's<br />actually your tambayan.</h1>
+    <p class="lede">
+      Browse every DLSU organization running recruitment right now, see how many slots are
+      left, and apply straight from your dashboard — no more separate Google Forms per org.
+    </p>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="num" th:text="${totalOrgCount}">0</div><div class="label">Orgs listed</div></div>
+      <div class="hero-stat"><div class="num" th:text="${recruitingCount}">0</div><div class="label">Recruiting now</div></div>
+      <div class="hero-stat"><div class="num" th:text="${openSlots}">0</div><div class="label">Slots open</div></div>
+    </div>
+  </div>
+</header>
+
+<main class="page-body">
+  <div class="wrap">
+
+    <div class="filter-row">
+      <a th:href="@{/(q=${searchTerm})}" class="chip" th:classappend="${selectedCategory == null} ? 'active' : ''">All</a>
+      <a th:each="c : ${categories}" th:href="@{/(category=${c},q=${searchTerm})}"
+         class="chip" th:classappend="${selectedCategory == c} ? 'active' : ''" th:text="${c}">Category</a>
+      <form method="get" th:action="@{/}" style="display:contents">
+        <input type="hidden" name="category" th:value="${selectedCategory}" />
+        <input class="input search-input" type="text" name="q" placeholder="Search organizations…" th:value="${searchTerm}" style="max-width:240px" />
+      </form>
+    </div>
+
+    <div class="booth-grid" th:if="${!organizations.isEmpty()}">
+      <a th:each="org : ${organizations}" th:href="@{/organizations/{id}(id=${org.id})}"
+         class="booth-card" th:classappend="${org.registrationOpen} ? '' : 'closed'">
+        <span class="pin"></span>
+        <span class="ribbon" th:classappend="${org.registrationOpen} ? 'open' : 'closed'"
+              th:text="${org.registrationOpen} ? 'Recruiting' : 'Closed'">Status</span>
+        <span class="eyebrow" th:text="${org.category}">Category</span>
+        <h3 th:text="${org.name}">Org name</h3>
+        <p class="desc" th:text="${org.description}">Description</p>
+        <div class="meter-block">
+          <div class="meter-label">
+            <span>Slots filled</span>
+            <span class="fill-num" th:text="${org.currentMemberCount} + '/' + ${org.membershipCap}">0/0</span>
+          </div>
+          <div class="meter"><div class="meter-fill" th:style="'width:' + ${org.membershipCap > 0 ? (org.currentMemberCount * 100 / org.membershipCap) : 0} + '%'"></div></div>
+        </div>
+        <div class="foot">
+          <span class="muted" style="font-size:13px" th:text="'₱' + ${#numbers.formatDecimal(org.membershipFeeAmount, 1, 0)} + ' fee'">₱0 fee</span>
+          <span class="btn btn-sm btn-primary">View booth →</span>
+        </div>
+      </a>
+    </div>
+
+    <div class="empty-state" th:if="${organizations.isEmpty()}">
+      <span class="eyebrow">No matches</span>
+      <p>No organizations match that search or filter. Try clearing it.</p>
+    </div>
+
+  </div>
+</main>
+
+</body>
+</html>

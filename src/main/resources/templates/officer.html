@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: pageHead(${title})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: nav('officer')}"></nav>
+
+<main class="page-body">
+  <div class="wrap" style="padding-top:28px">
+    <span class="eyebrow" th:text="${officer.position} + ' · Officer panel'">Officer panel</span>
+    <h1 style="margin-top:4px;margin-bottom:20px" th:text="${org.name}">Org name</h1>
+
+    <div class="form-error show" th:if="${officerError}" th:text="${officerError}"></div>
+    <div class="form-success show" th:if="${officerSuccess}" th:text="${officerSuccess}"></div>
+    <div class="form-success show" th:if="${feeReceipt}" th:text="${feeReceipt}"></div>
+
+    <div class="two-col">
+      <!-- ============ APPLICANTS ============ -->
+      <div>
+        <div class="tabs">
+          <a th:href="@{/officer}" th:classappend="${selectedStatus == null} ? 'active' : ''">All</a>
+          <a th:each="s : ${statuses}" th:href="@{/officer(status=${s})}" th:text="${s}"
+             th:classappend="${selectedStatus == s} ? 'active' : ''">STATUS</a>
+        </div>
+
+        <div th:if="${#lists.isEmpty(applications)}" class="empty-state">
+          <span class="eyebrow">No applicants</span>
+          <p>No applications match this filter yet.</p>
+        </div>
+
+        <div class="app-row" th:each="a : ${applications}">
+          <div class="app-row-top">
+            <div>
+              <div class="name" th:text="${a.applicant.name}">Name</div>
+              <div class="sub" th:text="${a.applicant.idNumber} + ' · ' + ${a.applicant.college} + ', ' + ${a.applicant.yearLevel} + ' · Applied ' + ${#temporals.format(a.dateApplied, 'MMM d, yyyy')}">Info</div>
+            </div>
+            <span class="badge" th:classappend="${a.status}" th:text="${a.status}">STATUS</span>
+          </div>
+          <p class="answers" th:if="${a.answers}" th:text="${a.answers}">Answers</p>
+          <div class="sub" style="margin-top:8px" th:if="${a.interviewSchedule}"
+               th:text="'Interview: ' + ${#temporals.format(a.interviewSchedule, 'MMM d, yyyy h:mm a')}">Interview</div>
+
+          <div class="actions">
+            <form th:action="@{/officer/applications/{id}/interview(id=${a.id})}" method="post" style="display:flex;gap:8px;align-items:center">
+              <input type="datetime-local" name="interviewSchedule" class="input" style="width:auto;padding:7px 10px;font-size:13px" required />
+              <button type="submit" class="btn btn-sm">Schedule interview</button>
+            </form>
+            <form th:action="@{/officer/applications/{id}/status(id=${a.id})}" method="post">
+              <input type="hidden" name="status" value="ACCEPTED" />
+              <button type="submit" class="btn btn-sm btn-primary" th:disabled="${a.status.name() == 'ACCEPTED'}">Accept</button>
+            </form>
+            <form th:action="@{/officer/applications/{id}/status(id=${a.id})}" method="post">
+              <input type="hidden" name="status" value="REJECTED" />
+              <button type="submit" class="btn btn-sm btn-danger" th:disabled="${a.status.name() == 'REJECTED'}">Reject</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ SIDE PANEL ============ -->
+      <div>
+
+        <div class="panel">
+          <p class="panel-title">Booth stats</p>
+          <div class="stat-grid" style="margin-bottom:16px">
+            <div class="stat"><div class="num" th:text="${org.currentMemberCount} + '/' + ${org.membershipCap}">0/0</div><div class="label">Members</div></div>
+            <div class="stat"><div class="num" th:text="'₱' + ${#numbers.formatDecimal(org.membershipFeeAmount, 1, 0)}">₱0</div><div class="label">Fee</div></div>
+          </div>
+          <div class="meter" style="margin-bottom:16px"><div class="meter-fill" th:style="'width:' + ${org.membershipCap > 0 ? (org.currentMemberCount * 100 / org.membershipCap) : 0} + '%'"></div></div>
+
+          <div class="divider"></div>
+
+          <form th:action="@{/officer/registration-status}" method="post" class="switch-row">
+            <div>
+              <div>Recruitment open</div>
+              <div class="hint">Students can only apply while this is on.</div>
+            </div>
+            <input type="hidden" name="open" th:value="${!org.registrationOpen}" />
+            <button type="submit" class="switch" th:classappend="${org.registrationOpen} ? 'on' : ''" style="border:1px solid var(--line);padding:0">
+              <span class="knob"></span>
+            </button>
+          </form>
+
+          <div class="divider"></div>
+
+          <form th:action="@{/officer/membership-cap}" method="post">
+            <div class="field">
+              <label>Membership cap</label>
+              <input class="input" type="number" name="membershipCap" th:value="${org.membershipCap}" th:min="${org.currentMemberCount}" />
+            </div>
+            <button type="submit" class="btn btn-sm">Save cap</button>
+          </form>
+        </div>
+
+        <div class="panel">
+          <p class="panel-title">Edit booth profile</p>
+          <form th:action="@{/officer/profile}" method="post">
+            <div class="field"><label>Category</label><input class="input" name="category" th:value="${org.category}" required /></div>
+            <div class="field"><label>Description</label><textarea class="textarea" name="description" rows="3" required th:text="${org.description}"></textarea></div>
+            <div class="field"><label>Social media handle</label><input class="input" name="socialMediaHandle" th:value="${org.socialMediaHandle}" /></div>
+            <div class="field"><label>Logo URL</label><input class="input" name="logoUrl" th:value="${org.logoUrl}" /></div>
+            <button type="submit" class="btn btn-primary btn-block">Save profile</button>
+          </form>
+        </div>
+
+        <div class="panel">
+          <p class="panel-title">Collect membership fee</p>
+          <p class="hint" style="margin-bottom:14px"
+             th:text="'Records a ' + (${org.paymentType.name() == 'DIGITAL_BANK'} ? 'digital bank' : 'cash') + ' payment and returns a receipt.'">Records a payment.</p>
+          <form th:action="@{/officer/collect-fee}" method="post">
+            <div class="field"><label>Payer name</label><input class="input" name="payerName" required /></div>
+            <button type="submit" class="btn btn-gold btn-block" th:text="'Collect ₱' + ${#numbers.formatDecimal(org.membershipFeeAmount, 1, 0)}">Collect</button>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</main>
+
+</body>
+</html>

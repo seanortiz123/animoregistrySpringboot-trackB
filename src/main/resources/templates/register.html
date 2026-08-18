@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: pageHead(${title})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: nav('register')}"></nav>
+
+<main class="auth-shell" style="max-width:480px">
+  <span class="eyebrow">First time here</span>
+  <h1 style="font-size:28px;margin-top:6px">Create an account</h1>
+  <p class="muted" style="margin-bottom:24px">Only official @dlsu.edu.ph emails and 8-digit ID numbers are accepted.</p>
+
+  <div class="panel">
+    <div class="form-error show" th:if="${registerError}" th:text="${registerError}"></div>
+
+    <div class="role-toggle">
+      <button type="button" id="role-tab-student" class="active" onclick="showRole('student')">Student</button>
+      <button type="button" id="role-tab-officer" onclick="showRole('officer')">Org officer</button>
+    </div>
+
+    <!-- ============ STUDENT FORM ============ -->
+    <form id="form-student" th:action="@{/register/student}" method="post">
+      <div class="field-row">
+        <div class="field"><label>DLSU ID number</label><input class="input" name="idNumber" maxlength="8" required /></div>
+        <div class="field"><label>Full name</label><input class="input" name="name" required /></div>
+      </div>
+      <div class="field"><label>DLSU email</label><input class="input" type="email" name="dlsuEmail" required /></div>
+      <div class="field"><label>Password (min. 8 characters)</label><input class="input" type="password" name="password" minlength="8" required /></div>
+      <div class="field-row">
+        <div class="field">
+          <label>College</label>
+          <select class="select" name="college">
+            <option>CCS</option><option>COB</option><option>CLA</option><option>CEng</option>
+            <option>COS</option><option>BAGCED</option><option>GCOE</option><option>RVR-COB</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Year level</label>
+          <select class="select" name="yearLevel">
+            <option>1st Year</option><option>2nd Year</option><option>3rd Year</option>
+            <option>4th Year</option><option>5th Year</option>
+          </select>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Create account</button>
+    </form>
+
+    <!-- ============ OFFICER FORMS ============ -->
+    <div id="form-officer" style="display:none">
+      <div class="tabs">
+        <button type="button" id="org-tab-existing" class="active" onclick="showOrgMode('existing')">Join existing org</button>
+        <button type="button" id="org-tab-new" onclick="showOrgMode('new')">Register a new org</button>
+      </div>
+
+      <form id="form-officer-existing" th:action="@{/register/officer}" method="post">
+        <div class="field-row">
+          <div class="field"><label>DLSU ID number</label><input class="input" name="idNumber" maxlength="8" required /></div>
+          <div class="field"><label>Full name</label><input class="input" name="name" required /></div>
+        </div>
+        <div class="field"><label>DLSU email</label><input class="input" type="email" name="dlsuEmail" required /></div>
+        <div class="field"><label>Password</label><input class="input" type="password" name="password" minlength="8" required /></div>
+        <div class="field">
+          <label>Organization</label>
+          <select class="select" name="organizationId">
+            <option th:each="org : ${organizations}" th:value="${org.id}" th:text="${org.name}">Org</option>
+          </select>
+        </div>
+        <div class="field"><label>Your position</label><input class="input" name="position" placeholder="VP for Membership" /></div>
+        <button type="submit" class="btn btn-primary btn-block">Create account</button>
+      </form>
+
+      <form id="form-officer-new" th:action="@{/register/officer-new-org}" method="post" style="display:none">
+        <div class="field-row">
+          <div class="field"><label>DLSU ID number</label><input class="input" name="idNumber" maxlength="8" required /></div>
+          <div class="field"><label>Full name</label><input class="input" name="name" required /></div>
+        </div>
+        <div class="field"><label>DLSU email</label><input class="input" type="email" name="dlsuEmail" required /></div>
+        <div class="field"><label>Password</label><input class="input" type="password" name="password" minlength="8" required /></div>
+
+        <div class="divider"></div>
+        <div class="field"><label>Organization name</label><input class="input" name="newOrgName" required /></div>
+        <div class="field-row">
+          <div class="field"><label>Category</label><input class="input" name="newOrgCategory" required /></div>
+          <div class="field"><label>Membership cap</label><input class="input" type="number" name="newOrgCap" min="1" required /></div>
+        </div>
+        <div class="field"><label>Description</label><textarea class="textarea" name="newOrgDescription" rows="2" required></textarea></div>
+        <div class="field-row">
+          <div class="field"><label>Membership fee (₱)</label><input class="input" type="number" name="newOrgFee" min="0" required /></div>
+          <div class="field">
+            <label>Payment method</label>
+            <select class="select" name="newOrgPayment">
+              <option value="CASH">Cash</option>
+              <option value="DIGITAL_BANK">Digital bank</option>
+            </select>
+          </div>
+        </div>
+        <div class="field"><label>Social media handle (optional)</label><input class="input" name="newOrgSocial" placeholder="@your.org" /></div>
+
+        <div class="field"><label>Your position</label><input class="input" name="position" placeholder="VP for Membership" /></div>
+        <p class="hint">You'll become the first registered officer of this org and can edit its full profile later from the officer panel.</p>
+        <button type="submit" class="btn btn-primary btn-block">Create organization &amp; account</button>
+      </form>
+    </div>
+  </div>
+
+  <p class="muted" style="text-align:center;margin-top:18px;font-size:13.5px">
+    Already registered? <a th:href="@{/login}" style="color:var(--gold)">Log in</a>
+  </p>
+</main>
+
+<script>
+  function showRole(role) {
+    document.getElementById('form-student').style.display = role === 'student' ? 'block' : 'none';
+    document.getElementById('form-officer').style.display = role === 'officer' ? 'block' : 'none';
+    document.getElementById('role-tab-student').classList.toggle('active', role === 'student');
+    document.getElementById('role-tab-officer').classList.toggle('active', role === 'officer');
+  }
+  function showOrgMode(mode) {
+    document.getElementById('form-officer-existing').style.display = mode === 'existing' ? 'block' : 'none';
+    document.getElementById('form-officer-new').style.display = mode === 'new' ? 'block' : 'none';
+    document.getElementById('org-tab-existing').classList.toggle('active', mode === 'existing');
+    document.getElementById('org-tab-new').classList.toggle('active', mode === 'new');
+  }
+</script>
+</body>
+</html>

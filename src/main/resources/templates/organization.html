@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: pageHead(${title})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: nav('home')}"></nav>
+
+<main class="page-body">
+  <div class="wrap" style="padding-top:28px">
+    <a th:href="@{/}" class="muted" style="font-size:13.5px">← Back to all orgs</a>
+
+    <div class="panel" style="margin-top:14px;position:relative">
+      <span class="ribbon" th:classappend="${org.registrationOpen} ? 'open' : 'closed'"
+            th:text="${org.registrationOpen} ? 'Recruiting' : 'Closed'">Status</span>
+      <span class="eyebrow" th:text="${org.category}">Category</span>
+      <h1 style="margin-top:4px" th:text="${org.name}">Org name</h1>
+      <p class="muted" style="font-family:var(--font-mono);font-size:13px" th:if="${org.socialMediaHandle}" th:text="${org.socialMediaHandle}">@handle</p>
+      <p style="margin-top:10px" th:text="${org.description}">Description</p>
+
+      <div class="stat-grid" style="margin-top:20px">
+        <div class="stat">
+          <div class="num" th:text="${org.currentMemberCount} + '/' + ${org.membershipCap}">0/0</div>
+          <div class="label">Slots filled</div>
+        </div>
+        <div class="stat">
+          <div class="num" th:text="'₱' + ${#numbers.formatDecimal(org.membershipFeeAmount, 1, 0)}">₱0</div>
+          <div class="label">Membership fee</div>
+        </div>
+        <div class="stat">
+          <div class="num" th:text="${org.paymentType == T(com.dlsu.animoregistry.model.PaymentType).DIGITAL_BANK} ? 'Bank' : 'Cash'">Cash</div>
+          <div class="label">Payment method</div>
+        </div>
+      </div>
+      <div class="meter" style="margin-top:14px"><div class="meter-fill" th:style="'width:' + ${org.membershipCap > 0 ? (org.currentMemberCount * 100 / org.membershipCap) : 0} + '%'"></div></div>
+    </div>
+
+    <div class="two-col" style="margin-top:20px">
+      <div class="panel">
+        <p class="panel-title">About recruitment</p>
+        <p class="muted" th:if="${org.registrationOpen}">This org is currently accepting applications. Submit yours and track its status from your dashboard.</p>
+        <p class="muted" th:unless="${org.registrationOpen}">This org has closed recruitment for the season. Check back next term, or explore other orgs.</p>
+      </div>
+
+      <div class="panel">
+        <p class="panel-title">Apply</p>
+
+        <div th:if="${currentRole == null}">
+          <p class="muted" style="font-size:13.5px">Log in as a student to submit an application to this org.</p>
+          <a class="btn btn-primary btn-block" th:href="@{/login}">Log in to apply</a>
+        </div>
+
+        <div th:if="${currentRole == 'officer'}">
+          <p class="muted" style="font-size:13.5px">You're signed in as an officer, so you can't submit an application here.</p>
+          <a th:if="${currentOrganizationId == org.id}" class="btn btn-primary btn-block" style="margin-top:12px" th:href="@{/officer}">Go to officer panel →</a>
+        </div>
+
+        <div th:if="${currentRole == 'student'}">
+          <div class="form-success show" th:if="${applySuccess}" th:text="${applySuccess}"></div>
+          <div class="form-error show" th:if="${applyError}" th:text="${applyError}"></div>
+          <form th:action="@{/organizations/{id}/apply(id=${org.id})}" method="post">
+            <div class="field">
+              <label>Why do you want to join? Tell them about yourself.</label>
+              <textarea class="textarea" name="answers" rows="4" required
+                        th:disabled="${!org.registrationOpen or org.currentMemberCount >= org.membershipCap}"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block" th:disabled="${!org.registrationOpen or org.currentMemberCount >= org.membershipCap}">
+              <span th:text="${org.registrationOpen and org.currentMemberCount lt org.membershipCap} ? 'Submit application' : 'Recruitment closed'">Submit</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+</body>
+</html>

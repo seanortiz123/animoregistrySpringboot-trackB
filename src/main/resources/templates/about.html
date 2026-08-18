@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: pageHead(${title})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: nav('about')}"></nav>
+
+<header class="hero">
+    <div class="wrap">
+        <span class="eyebrow">The team behind AnimoRegistry</span>
+        <h1>About us</h1>
+        <p class="lede">
+            Hello! We are Group 1 currently taking LBYCPOB and this project was created as a final output for this course. Our goal was to help the organization registration process,
+            especially during recruitment season, which is why this project was born.
+
+            If you have any suggestions or concerns, feel free to contact us via the email in our bio!
+        </p>
+    </div>
+</header>
+
+<main class="page-body">
+    <div class="wrap">
+        <div class="team-grid">
+            <div class="team-card">
+                <img class="avatar" th:src="@{/images/johanna.jpg}" alt="Johanna Rae Castor" />
+                <h3>Johanna Rae Castor</h3>
+                <span class="role">Developer</span>
+                <p class="bio">She is an undergraduate student, ID125, studying Computer Engineering in De La Salle University Manila
+                    and this project was created as a final output for the course LBYCPOB under Sir Melvin Cabatuan's guidance.</p>
+                <span class="muted" style="font-family:var(--font-mono);font-size:13px">johanna_castor@dlsu.edu.ph</span>
+            </div>
+            <div class="team-card">
+                <img class="avatar" th:src="@{/images/sean.jpg}" alt="Sean Matthew Ortiz" />
+                <h3>Sean Matthew Ortiz</h3>
+                <span class="role">Developer</span>
+                <p class="bio">He is an undergraduate student, ID125, studying Computer Engineering in De La Salle University Manila
+                    and this project was created as a final output for the course LBYCPOB under Sir Melvin Cabatuan's guidance.</p>
+                <span class="muted" style="font-family:var(--font-mono);font-size:13px">sean_ortiz@dlsu.edu.ph</span>
+            </div>
+            <div class="team-card">
+                <img class="avatar" th:src="@{/images/gian.jpg}" alt="Gian Gabriel Fadriquela" />
+                <h3>Gian Gabriel Fadriquela</h3>
+                <span class="role">Developer</span>
+                <p class="bio">He is an undergraduate student, ID125, studying Computer Engineering in De La Salle University Manila
+                    and this project was created as a final output for the course LBYCPOB under Sir Melvin Cabatuan's guidance.</p>
+                <span class="muted" style="font-family:var(--font-mono);font-size:13px">gian_fadriquela@dlsu.edu.ph</span>
+            </div>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>
